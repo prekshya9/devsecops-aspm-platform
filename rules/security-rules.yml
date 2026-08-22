@@ -1,0 +1,38 @@
+rules:
+  - id: custom-sensitive-pii-logging
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "GDPR Violation (Article 32): Logging of sensitive variable '$VAR' detected. Do not write unmasked personal identifiers, passwords, or tokens to logs."
+    metadata:
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+      compliance: "GDPR Article 32 (Security of Processing)"
+    patterns:
+      - pattern-either:
+          - pattern: console.log(..., $VAR, ...)
+          - pattern: console.info(..., $VAR, ...)
+          - pattern: console.error(..., $VAR, ...)
+          - pattern: logger.$LOG(..., $VAR, ...)
+      - pattern-regex: "(?i)(password|token|secret|credit_card|card_number|ssn|ni_number|api_key)"
+
+  - id: custom-raw-sql-injection
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "SQL Injection Risk: Direct string interpolation in database query execution. Violates GDPR Article 25 (Privacy by Design) and OWASP A03."
+    metadata:
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+      compliance: "GDPR Article 25 & PCI-DSS Req 6.5"
+    patterns:
+      - pattern-either:
+          - pattern: $DB.query($QUERY + $INPUT)
+          - pattern: $DB.query(`...${$INPUT}...`)
+          - pattern: db.execute($QUERY + $INPUT)
+
+  - id: custom-insecure-session-cookie
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: "Insecure Cookie Flag: Cookie set without 'httpOnly: true' or 'secure: true'. Vulnerable to session hijacking via XSS."
+    metadata:
+      cwe: "CWE-614: Sensitive Cookie in HTTPS Session Without Secure Attribute"
+    patterns:
+      - pattern: res.cookie($NAME, $VAL, { ... })
+      - pattern-not: res.cookie($NAME, $VAL, { ..., httpOnly: true, secure: true, ... })
