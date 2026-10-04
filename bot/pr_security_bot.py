@@ -87,7 +87,6 @@ def run_bot():
     report = ComplianceRiskEngine.evaluate_scan(
         findings=all_findings,
         repository=repo_name or "local-repo",
-        branch_or_pr=f"PR #{pr_number}" if pr_number else "main"
     )
     breakdown = ComplianceRiskEngine.generate_compliance_breakdown(all_findings)
     markdown_comment = generate_pr_markdown_summary(report, breakdown)
